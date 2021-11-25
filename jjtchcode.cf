@@ -1,0 +1,301 @@
+#!/bin/bash
+sudo mkdir /tmp/ssm
+cd /tmp/ssm
+sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+sudo systemctl enable amazon-ssm-agent
+sudo systemctl start amazon-ssm-agent
+sudo systemctl status amazon-ssm-agent
+
+
+==================================================================================================================
+For the RHEL8, We Used actual region where we're lunching EC2
+
+
+#!/bin/bash
+sudo mkdir /tmp/ssm
+cd /tmp/ssm
+sudo dnf install -y https://s3.us-east-2.amazonaws.com/amazon-ssm-us-east-2/latest/linux_amd64/amazon-ssm-agent.rpm
+sudo systemctl enable amazon-ssm-agent
+sudo systemctl start amazon-ssm-agent
+sudo systemctl status amazon-ssm-agent
+
+=========================================================
+You have To Modify the Following Code, Using The Activation ID We Generated from Hybrid Activation;-
+
+sudo systemctl stop amazon-ssm-agent
+# edit the code, id and region in the command below;
+
+#!/bin/bash
+sudo mkdir /tmp/ssm
+cd /tmp/ssm
+sudo dnf install -y https://s3.region.amazonaws.com/amazon-ssm-region/latest/linux_amd64/amazon-ssm-agent.rpm
+sudo systemctl stop amazon-ssm-agent
+# edit the code, id and region in the command below
+sudo amazon-ssm-agent -register -code "q99Nmak5pITsS" -id "4eec744a-1bdd-4c23-850d-9dd4" -region "us-east-1"
+sudo systemctl enable amazon-ssm-agent
+sudo systemctl start amazon-ssm-agent
+sudo systemctl status amazon-ssm-agent
+
+==========================================================================
+
+#!/bin/bash
+sudo mkdir /tmp/ssm
+cd /tmp/ssm
+sudo dnf install -y https://s3.region.amazonaws.com/amazon-ssm-region/latest/linux_amd64/amazon-ssm-agent.rpm
+sudo systemctl stop amazon-ssm-agent
+# edit the code, id and region in the command below
+sudo amazon-ssm-agent -register -code "q99Nmak5pITsS" -id "cbd592b7-1ccb-4080-8cbe-126141e6ec7c" -region "us-east-1"
+sudo systemctl enable amazon-ssm-agent
+sudo systemctl start amazon-ssm-agent
+sudo systemctl status amazon-ssm-agent
+
+======================================================================================================================================================
+https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
+
+docs.aws.amazon.comdocs.aws.amazon.com
+(Optional) Install the Session Manager plugin for the AWS CLI - AWS Systems Manager
+Install the Session Manager plugin on your system to use the AWS CLI to start and end sessions that connect to your managed instances.
+
+Note:-
+Replace <instance id>, with your Instance ID
+aws ssm start-session --target <instance id>
+
+
+===========================================================================
+curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
+
+sudo yum install -y session-manager-plugin.rpm
+
+For Windows:
+https://s3.amazonaws.com/session-manager-downloads/plugin/latest/windows/SessionManagerPluginSetup.exe
+
+aws ssm start-session --target i-0bd0e2aac1ce27674
+
+
+==================================================================================================================
+
+11/9/21
+GuardDuty Dry Run
+
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "sns:Publish",
+            "Resource": "arn:aws:sns:us-east-1:218124075188:Awa-Guarddutysns"
+        }
+    ]
+}
+
+
+
+
+==================================================================================================================================================================================
+
+{
+  "description": "cross-platform sample",
+  "schemaVersion": "2.2",
+  "mainSteps": [
+    {
+      "inputs": {
+        "runCommand": [
+          "$ErrorActionPreference = \"SilentlyContinue\"\n",
+          "Stop-Transcript | out-null\n",
+          "$ErrorActionPreference = \"Continue\"\n",
+          "Start-Transcript -Path C:\\Chef\\$env:COMPUTERNAME.log -Append\n",
+          "Initialize-AWSDefaultConfiguration -Region us-east-1\n",
+          "Copy-S3Object -BucketName ovid-main -Key 'bin/winsanity.ps1' -LocalFolder C:\\Temp -region us-east-1\n",
+          "powershell.exe -File C:\\Temp\\bin\\winsanity.ps1 > C:\\Temp\\$env:COMPUTERNAME.log\n",
+          "Stop-Transcript\n",
+          "Write-S3Object -BucketName ovid-devtest  -KeyPrefix log -Folder C:\\Temp  -SearchPattern *.log\n",
+          "$text = Get-Content C:\\Temp\\$env:COMPUTERNAME.log | Out-String\n",
+          "Publish-SNSMessage -Message $text -Region eu-west-1 -Subject $env:COMPUTERNAME -TopicArn arn:aws:sns:eu-west-1:171789863757:OCM-Server-Reports\n"
+        ]
+      },
+      "name": "PatchWindows",
+      "action": "aws:runPowerShellScript",
+      "precondition": {
+        "StringEquals": [
+          "platformType",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "inputs": {
+        "runCommand": [
+          "aws s3 cp s3://jjtech-insanity/S3_insanitycheck.sh /tmp",
+          "chmod +x /tmp/S3_insanitycheck.sh",
+          "bash /tmp/S3_insanitycheck.sh &> /tmp/$(hostname).log",
+          "aws s3 cp /tmp/$(hostname).log s3://jjtech-insanity/log/$(hostname).log",
+          "aws sns publish --topic-arn \"arn:aws:sns:us-east-1:464599248654:InstanceStateNoifty\" --subject $(hostname) --message file:///tmp/$(hostname).log --region us-east-1"
+        ]
+      },
+      "name": "PatchLinux",
+      "action": "aws:runShellScript",
+      "precondition": {
+        "StringEquals": [
+          "platformType",
+          "Linux"
+        ]
+      }
+    }
+  ]
+}
+
+
+
+
+==================================================================================================================
+Saturday Class 11/13/21
+devopstrainer92@gmail.com
+
+Alban Dossou (One of the Pioneer JJTECH)
+507 589 5081
+
+
+
+Monday 11/15/21
+Terraform Resource from Danny;
+https://www.tfwriter.com/aws/aws.html#resources
+
+
+11/16/21
+Governance In AWS:-
+
+iykeawauma@gmail.com
+
+IAM role name
+OrganizationAccountAccessRole
+
+i.ykeuma07@gmail.com
+354338203897
+  |
+i.ykeuma07@gmail.com
+
+
+Wed 11/17/21
+We will create IAM ROLE, Create and EC2 Instance and attche the role we created
+
+AWS POLICY  GENERATOR:
+http://awspolicygen.s3.amazonaws.com/policygen.html
+
+===================================================================
+
+# EC2 role to access s3 service
+resource "aws_iam_role" "ec2_s3_role" {
+    name = "ec2_s3_rw_role"
+    assume_role_policy = jsonencode(
+    {
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+
+}
+
+resource "aws_iam_role_policy" "ec2_s3_role_policy" {
+    name = "ec2_s3_role_policy"
+    role = aws_iam_role.ec2_s3_role.id
+    policy = jsonencode(
+            {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+            "Sid": "s3getandputObject",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+            }
+
+        ]
+        })
+
+
+}
+
+resource "aws_iam_instance_profile" "instace_profile" {
+    name = "ec2_s3_instance_profile"
+    role = aws_iam_role.ec2_s3_role.name
+
+}
+
+resource "aws_instance" "testIntance" {
+    ami = "ami-04ad2567c9e3d7893"
+    instance_type = "t2.micro"
+    key_name = "myLaptop"
+    iam_instance_profile = aws_iam_instance_profile.instace_profile.name
+    associate_public_ip_address = true
+
+
+}
+
+
+
+==============================================================================================================================================
+Later Version:-
+
+resource "aws_instance" "JJtech_EC2" {
+    ami ="ami-04ad2567c9e3d7893"
+    instance_type = "t2.micro"
+    iam_instance_profile = aws_iam_instance_profile.EC2_profile.name
+}
+resource "aws_iam_role" "EC2_role" {
+    name = "full_access_S3"
+    assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+resource "aws_iam_role_policy" "EC2_policy" {
+  name = "full_access_full_policy"
+  role = aws_iam_role.EC2_role.id
+  policy =  jsonencode(
+            {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+            "Sid": "s3getandputObject",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+            }
+        ]
+        })
+}
+resource "aws_iam_instance_profile" "EC2_profile" {
+    name = "EC2_name_profile"
+    role = aws_iam_role.EC2_role.name
+}
+
+
+
